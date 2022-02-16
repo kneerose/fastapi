@@ -15,7 +15,7 @@ async def upload_file(file:UploadFile):
      image = read_image(await file.read())
     # after processing
     # image = preprocess(imag)
-     return {"image":"image uploaded"}
+     return {"predict shot":"Cut Shot","efficiency":"90%"}
 
 @app.get("/shotname",tags=["shots"])
 def get_name():
