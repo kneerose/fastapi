@@ -15,7 +15,12 @@ async def upload_file(file:UploadFile):
      image = read_image(await file.read())
     # after processing
     # image = preprocess(imag)
-     return {"image":""}
+     return {"image":"image uploaded"}
+
+@app.get("/shotname",tags=["shots"])
+def get_name():
+     return {"Shots":[{
+         "1":"Cut Shot"},{"2":"Cover Drive"},{"3":"Straight Drive"},{"4":"Scoop"},{"5":"Leg Glance"},{"6":"Pull Shot"}]}
 
 
 if __name__ == "__main__":
