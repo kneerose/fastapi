@@ -5,3 +5,4 @@ gunicorn
 uvicorn
 numpy
 python-multipart
+uuid

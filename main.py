@@ -2,6 +2,7 @@ import uvicorn
 from fastapi import FastAPI,File,UploadFile
 from numpy import imag
 from readImage import  read_image
+from uuid import uuid4
 
 app = FastAPI()
 
@@ -22,6 +23,11 @@ def get_name():
      return {"Shots":[{
          "1":"Cut Shot"},{"2":"Cover Drive"},{"3":"Straight Drive"},{"4":"Scoop"},{"5":"Leg Glance"},{"6":"Pull Shot"}]}
 
+@app.get("/uuid",tags=["Token generate"])
+def get_token():
+     return {
+        "token":str(uuid4())
+     }
 
 if __name__ == "__main__":
     uvicorn.run(app, debug=True)
