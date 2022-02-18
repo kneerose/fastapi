@@ -1,5 +1,5 @@
 from fastapi import FastAPI,File,UploadFile
-from readImage import  predict_shot, read_image
+# from readImage import  predict_shot, read_image
 from uuid import uuid4
 
 app = FastAPI()
@@ -11,10 +11,10 @@ def readroot():
 @app.post("/files/",tags=["imageupload"])
 async def upload_file(file:UploadFile):
     # read image file
-     image = read_image(await file.read())
-     result_shot= predict_shot(image)
+    #  image = read_image(await file.read())
+    #  result_shot= predict_shot(image)
      result_eff = "Unknown"
-     return {"PredictedShot": result_shot, "Efficiency": result_eff}
+     return {"PredictedShot": "", "Efficiency": result_eff}
 
 @app.get("/shotname",tags=["shots"])
 def get_name():
