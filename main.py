@@ -5,7 +5,8 @@ from warnings import filterwarnings
 filterwarnings('ignore')
 import numpy as np
 import pickle
-# import mediapipe as mp
+import mediapipe as mp
+import matplotlib.pyplot as plt
 from uuid import uuid4
 
 classes_list = ['0. Cut Shot', '1. Cover Drive', '2. Straight Drive',
@@ -29,10 +30,10 @@ def read_image(image_encoded):
 
 def predict_shot(img):
 
-    # mpPose = mp.solutions.pose
-    # pose = mpPose.Pose()
-    # mpDraw = mp.solutions.drawing_utils  # For drawing keypoints
-    # points = mpPose.PoseLandmark  # Landmarks
+    mpPose = mp.solutions.pose
+    pose = mpPose.Pose()
+    mpDraw = mp.solutions.drawing_utils  # For drawing keypoints
+    points = mpPose.PoseLandmark  # Landmarks
 
     data = []
     # img = cv2.imread(path)
@@ -40,22 +41,22 @@ def predict_shot(img):
     # imgRGB = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     imgRGB = np.array(img)
     print(img);
-    # results = pose.process(imgRGB)
-    # print("image");
-    # print(results)
+    results = pose.process(imgRGB)
+    print("image");
+    print(results)
 
     # Run this only when landmarks are detected
-    # if results.pose_landmarks:
-    #     mpDraw.draw_landmarks(imgRGB, results.pose_landmarks, mpPose.POSE_CONNECTIONS,
-    #                           mpDraw.DrawingSpec(
-    #                           color=(245, 117, 66), thickness=2, circle_radius=2),
-    #                           mpDraw.DrawingSpec(color=(245, 66, 230), thickness=2, circle_radius=2))
-    #     landmarks = results.pose_landmarks.landmark
-    #     for i, j in zip(points, landmarks):
-    #         data = data + [j.x, j.y, j.z, j.visibility]
-    # data = [data[i] for i in idx_features]
-    # result = int(model.predict([data])[0])
-    # return result
+    if results.pose_landmarks:
+        mpDraw.draw_landmarks(imgRGB, results.pose_landmarks, mpPose.POSE_CONNECTIONS,
+                              mpDraw.DrawingSpec(
+                              color=(245, 117, 66), thickness=2, circle_radius=2),
+                              mpDraw.DrawingSpec(color=(245, 66, 230), thickness=2, circle_radius=2))
+        landmarks = results.pose_landmarks.landmark
+        for i, j in zip(points, landmarks):
+            data = data + [j.x, j.y, j.z, j.visibility]
+    data = [data[i] for i in idx_features]
+    result = int(model.predict([data])[0])
+    return result
 
 
 @app.get("/")
