@@ -1,8 +1,6 @@
 from io import BytesIO
 from PIL import Image
-import pandas as pd
 import numpy as np
-import os
 import pickle
 import mediapipe as mp
 import matplotlib.pyplot as plt
@@ -16,6 +14,7 @@ idx_features = [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 3
 pkl_filename = 'model/shot_classification.pkl'
 with open(pkl_filename, 'rb') as file:
     model = pickle.load(file)
+    
 def read_image(image_encoded):
     print(BytesIO(image_encoded));
     pil_image = Image.open(BytesIO(image_encoded))

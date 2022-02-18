@@ -1,6 +1,5 @@
 import uvicorn
-from fastapi import FastAPI,File,UploadFile
-from numpy import imag
+from fastapi import FastAPI,UploadFile
 from readImage import  predict_shot, read_image
 from uuid import uuid4
 from warnings import filterwarnings
