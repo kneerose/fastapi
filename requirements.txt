@@ -6,3 +6,8 @@ uvicorn
 numpy
 python-multipart
 uuid
+pandas
+mediapipe
+matplotlib
+opencv-python-headless
+opencv-python
