@@ -1,8 +1,10 @@
 import uvicorn
 from fastapi import FastAPI,File,UploadFile
 from numpy import imag
-from readImage import  read_image
+from readImage import  predict_shot, read_image
 from uuid import uuid4
+from warnings import filterwarnings
+filterwarnings('ignore')
 
 app = FastAPI()
 
@@ -14,14 +16,14 @@ def readroot():
 async def upload_file(file:UploadFile):
     # read image file
      image = read_image(await file.read())
-    # after processing
-    # image = preprocess(imag)
-     return {"predict shot":"Cut Shot","efficiency":"90%"}
+     result_shot= predict_shot(image)
+     result_eff = "Unknown"
+     return {"PredictedShot": result_shot, "Efficiency": result_eff}
 
 @app.get("/shotname",tags=["shots"])
 def get_name():
      return {"Shots":[{
-         "1":"Cut Shot"},{"2":"Cover Drive"},{"3":"Straight Drive"},{"4":"Scoop"},{"5":"Leg Glance"},{"6":"Pull Shot"}]}
+         "0":"Cut Shot"},{"1":"Cover Drive"},{"2":"Straight Drive"},{"3":"Pull Shot"},{"4":"Leg Glance Shot"},{"5":"Scoop Shot"}]}
 
 @app.get("/uuid",tags=["Token generate"])
 def get_token():
