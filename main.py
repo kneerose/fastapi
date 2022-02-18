@@ -1,6 +1,6 @@
 import uvicorn
 from fastapi import FastAPI,UploadFile
-from readImage import  predict_shot, read_image
+from readImage import   read_image
 from uuid import uuid4
 from warnings import filterwarnings
 filterwarnings('ignore')
@@ -15,7 +15,7 @@ def readroot():
 async def upload_file(file:UploadFile):
     # read image file
      image = read_image(await file.read())
-     result_shot= predict_shot(image)
+     result_shot= ""
      result_eff = "Unknown"
      return {"PredictedShot": result_shot, "Efficiency": result_eff}
 
