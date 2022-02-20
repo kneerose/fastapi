@@ -448,7 +448,8 @@ def readroot():
 @app.post("/files/",tags=["imageupload"])
 async def upload_file(file:UploadFile):
     # read image file
-      img_uploaded = read_image(await file.read())
+     img_uploaded = read_image(await file.read())
+     return {"PredictedShot": "", "Efficiency": ""}
     #   try:
     #     result_shot, imgRGB = predict_shot(img_uploaded)
     #   except Exception as e:
@@ -467,7 +468,7 @@ async def upload_file(file:UploadFile):
     #         print(e)
     #         result_eff = "Unknown"
         
-      return {"PredictedShot": "", "Efficiency": ""}
+    
 
 
 @app.get("/shotname",tags=["shots"])
