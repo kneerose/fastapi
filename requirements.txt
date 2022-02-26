@@ -1,15 +1,15 @@
 starlette
 gunicorn
 uuid
-opencv-python
-opencv-python-headless
-fastapi
-uvicorn
-# mediapipe
 matplotlib
 numpy
 pandas
 python-multipart
+opencv-python
+opencv-python-headless
+fastapi
+uvicorn
+mediapipe
 # tflite-model-maker
 # tensorflow
 # imutils
