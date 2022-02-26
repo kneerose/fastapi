@@ -1,4 +1,3 @@
-﻿﻿Pillow
 starlette
 gunicorn
 uuid
