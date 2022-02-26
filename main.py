@@ -3,14 +3,11 @@ from io import BytesIO
 from PIL import Image
 import os
 # os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-# import numpy as np
-# import pickle
-# import mediapipe as mp
+import numpy as np
+import pickle
+import mediapipe as mp
 # import matplotlib.pyplot as plt
 from uuid import uuid4
-
-
-from sqlalchemy import null
 # from tflite_model_maker.config import ExportFormat, QuantizationConfig
 # from tflite_model_maker import model_spec
 # from tflite_model_maker import object_detector
@@ -25,15 +22,15 @@ from sqlalchemy import null
 # Interface for running tflite models
 # Interpreter = tf.lite.Interpreter
 
-# classes_list = ['0. Cut Shot', '1. Cover Drive', '2. Straight Drive',
-#                 '3. Pull Shot', '4. Leg Glance Shot', '5. Scoop Shot']
+classes_list = ['0. Cut Shot', '1. Cover Drive', '2. Straight Drive',
+                '3. Pull Shot', '4. Leg Glance Shot', '5. Scoop Shot']
 
-# idx_features = [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40, 42, 44, 46, 48, 50, 53, 55, 56, 57, 58,
-#                 59, 61, 63, 65, 66, 67, 68, 69, 73, 74, 75, 77, 81, 82, 83, 85, 89, 90, 91, 92, 94, 96, 98, 103, 104, 106, 107, 112, 115, 119, 120, 128]
+idx_features = [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40, 42, 44, 46, 48, 50, 53, 55, 56, 57, 58,
+                59, 61, 63, 65, 66, 67, 68, 69, 73, 74, 75, 77, 81, 82, 83, 85, 89, 90, 91, 92, 94, 96, 98, 103, 104, 106, 107, 112, 115, 119, 120, 128]
 
-# pkl_filename = 'model/shot_classification.pkl'
-# with open(pkl_filename, 'rb') as file:
-#     model = pickle.load(file)
+pkl_filename = 'model/shot_classification.pkl'
+with open(pkl_filename, 'rb') as file:
+    model = pickle.load(file)
 
 app = FastAPI()
 
@@ -44,35 +41,35 @@ def read_image(image_encoded):
     return pil_image
 
 
-# def predict_shot(img):
+def predict_shot(img):
 
-#     mpPose = mp.solutions.pose
-#     pose = mpPose.Pose()
-#     mpDraw = mp.solutions.drawing_utils  # For drawing keypoints
-#     points = mpPose.PoseLandmark  # Landmarks
+    mpPose = mp.solutions.pose
+    pose = mpPose.Pose()
+    mpDraw = mp.solutions.drawing_utils  # For drawing keypoints
+    points = mpPose.PoseLandmark  # Landmarks
 
-#     data = []
-#     # img = cv2.imread(path)
-#     # imageWidth, imageHeight = img.shape[:2]
-#     # imgRGB = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-#     imgRGB = np.array(img)
-#     print(img);
-#     results = pose.process(imgRGB)
-#     print("image");
-#     print(results)
+    data = []
+    # img = cv2.imread(path)
+    # imageWidth, imageHeight = img.shape[:2]
+    # imgRGB = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    imgRGB = np.array(img)
+    print(img);
+    results = pose.process(imgRGB)
+    print("image");
+    print(results)
 
-#     # Run this only when landmarks are detected
-#     if results.pose_landmarks:
-#         mpDraw.draw_landmarks(imgRGB, results.pose_landmarks, mpPose.POSE_CONNECTIONS,
-#                               mpDraw.DrawingSpec(
-#                               color=(245, 117, 66), thickness=2, circle_radius=2),
-#                               mpDraw.DrawingSpec(color=(245, 66, 230), thickness=2, circle_radius=2))
-#         landmarks = results.pose_landmarks.landmark
-#         for i, j in zip(points, landmarks):
-#             data = data + [j.x, j.y, j.z, j.visibility]
-#     data = [data[i] for i in idx_features]
-#     result = int(model.predict([data])[0])
-#     return result
+    # Run this only when landmarks are detected
+    if results.pose_landmarks:
+        mpDraw.draw_landmarks(imgRGB, results.pose_landmarks, mpPose.POSE_CONNECTIONS,
+                              mpDraw.DrawingSpec(
+                              color=(245, 117, 66), thickness=2, circle_radius=2),
+                              mpDraw.DrawingSpec(color=(245, 66, 230), thickness=2, circle_radius=2))
+        landmarks = results.pose_landmarks.landmark
+        for i, j in zip(points, landmarks):
+            data = data + [j.x, j.y, j.z, j.visibility]
+    data = [data[i] for i in idx_features]
+    result = int(model.predict([data])[0])
+    return result
 
 # class ObjectDetectorOptions(NamedTuple):
 #     """A config to initialize an object detector."""
@@ -449,7 +446,8 @@ def readroot():
 async def upload_file(file:UploadFile):
     # read image file
      img_uploaded = read_image(await file.read())
-     return {"PredictedShot": "", "Efficiency": ""}
+     shot_predict = predict_shot(img_uploaded);
+     return {"PredictedShot": shot_predict, "Efficiency": ""}
     #   try:
     #     result_shot, imgRGB = predict_shot(img_uploaded)
     #   except Exception as e:
@@ -482,6 +480,6 @@ def get_token():
         "token":str(uuid4())
      }
 
-@app.get("/model",tags=["model"])
-def get_modeljson():
-    return {"format": "layers-model", "generatedBy": "keras v2.8.0", "convertedBy": "TensorFlow.js Converter v3.13.0", "modelTopology": {"keras_version": "2.8.0", "backend": "tensorflow", "model_config": {"class_name": "Sequential", "config": {"name": "sequential", "layers": [{"class_name": "InputLayer", "config": {"batch_input_shape": [null, 30, 1662], "dtype": "float32", "sparse": False, "ragged": False, "name": "lstm_input"}}, {"class_name": "LSTM", "config": {"name": "lstm", "trainable":True, "batch_input_shape": [null, 30, 1662], "dtype": "float32", "return_sequences":True, "return_state": False, "go_backwards": False, "stateful": False, "unroll": False, "time_major": False, "units": 256, "activation": "relu", "recurrent_activation": "sigmoid", "use_bias": True, "kernel_initializer": {"class_name": "GlorotUniform", "config": {"seed": null}}, "recurrent_initializer": {"class_name": "Orthogonal", "config": {"gain": 1.0, "seed": null}}, "bias_initializer": {"class_name": "Zeros", "config": {}}, "unit_forget_bias": True, "kernel_regularizer": null, "recurrent_regularizer": null, "bias_regularizer": null, "activity_regularizer": null, "kernel_constraint": null, "recurrent_constraint": null, "bias_constraint": null, "dropout": 0.0, "recurrent_dropout": 0.0, "implementation": 2}}, {"class_name": "LSTM", "config": {"name": "lstm_1", "trainable": True, "dtype": "float32", "return_sequences": True, "return_state": False, "go_backwards": False, "stateful": False, "unroll": False, "time_major": False, "units": 128, "activation": "relu", "recurrent_activation": "sigmoid", "use_bias": True, "kernel_initializer": {"class_name": "GlorotUniform", "config": {"seed": null}}, "recurrent_initializer": {"class_name": "Orthogonal", "config": {"gain": 1.0, "seed": null}}, "bias_initializer": {"class_name": "Zeros", "config": {}}, "unit_forget_bias": True, "kernel_regularizer": null, "recurrent_regularizer": null, "bias_regularizer": null, "activity_regularizer": null, "kernel_constraint": null, "recurrent_constraint": null, "bias_constraint": null, "dropout": 0.0, "recurrent_dropout": 0.0, "implementation": 2}}, {"class_name": "LSTM", "config": {"name": "lstm_2", "trainable": True, "dtype": "float32", "return_sequences": False, "return_state": False, "go_backwards": False, "stateful": False, "unroll": False, "time_major": False, "units": 64, "activation": "relu", "recurrent_activation": "sigmoid", "use_bias": True, "kernel_initializer": {"class_name": "GlorotUniform", "config": {"seed": null}}, "recurrent_initializer": {"class_name": "Orthogonal", "config": {"gain": 1.0, "seed": null}}, "bias_initializer": {"class_name": "Zeros", "config": {}}, "unit_forget_bias": True, "kernel_regularizer": null, "recurrent_regularizer": null, "bias_regularizer": null, "activity_regularizer": null, "kernel_constraint": null, "recurrent_constraint": null, "bias_constraint": null, "dropout": 0.0, "recurrent_dropout": 0.0, "implementation": 2}}, {"class_name": "Dense", "config": {"name": "dense", "trainable": True, "dtype": "float32", "units": 64, "activation": "relu", "use_bias": True, "kernel_initializer": {"class_name": "GlorotUniform", "config": {"seed": null}}, "bias_initializer": {"class_name": "Zeros", "config": {}}, "kernel_regularizer": null, "bias_regularizer": null, "activity_regularizer": null, "kernel_constraint": null, "bias_constraint": null}}, {"class_name": "Dense", "config": {"name": "dense_1", "trainable": True, "dtype": "float32", "units": 32, "activation": "relu", "use_bias": True, "kernel_initializer": {"class_name": "GlorotUniform", "config": {"seed": null}}, "bias_initializer": {"class_name": "Zeros", "config": {}}, "kernel_regularizer": null, "bias_regularizer": null, "activity_regularizer": null, "kernel_constraint": null, "bias_constraint": null}}, {"class_name": "Dense", "config": {"name": "dense_2", "trainable": True, "dtype": "float32", "units": 10, "activation": "softmax", "use_bias": True, "kernel_initializer": {"class_name": "GlorotUniform", "config": {"seed": null}}, "bias_initializer": {"class_name": "Zeros", "config": {}}, "kernel_regularizer": null, "bias_regularizer": null, "activity_regularizer": null, "kernel_constraint": null, "bias_constraint": null}}]}}, "training_config": {"loss": "categorical_crossentropy", "metrics": [[{"class_name": "MeanMetricWrapper", "config": {"name": "categorical_accuracy", "dtype": "float32", "fn": "categorical_accuracy"}}]], "weighted_metrics": null, "loss_weights": null, "optimizer_config": {"class_name": "Adam", "config": {"name": "Adam", "learning_rate": 0.001, "decay": 0.0, "beta_1": 0.9, "beta_2": 0.999, "epsilon": 1e-07, "amsgrad": False}}}}, "weightsManifest": [{"paths": ["group1-shard1of3.bin", "group1-shard2of3.bin", "group1-shard3of3.bin"], "weights": [{"name": "dense/kernel", "shape": [64, 64], "dtype": "float32"}, {"name": "dense/bias", "shape": [64], "dtype": "float32"}, {"name": "dense_1/kernel", "shape": [64, 32], "dtype": "float32"}, {"name": "dense_1/bias", "shape": [32], "dtype": "float32"}, {"name": "dense_2/kernel", "shape": [32, 10], "dtype": "float32"}, {"name": "dense_2/bias", "shape": [10], "dtype": "float32"}, {"name": "lstm/lstm_cell/kernel", "shape": [1662, 1024], "dtype": "float32"}, {"name": "lstm/lstm_cell/recurrent_kernel", "shape": [256, 1024], "dtype": "float32"}, {"name": "lstm/lstm_cell/bias", "shape": [1024], "dtype": "float32"}, {"name": "lstm_1/lstm_cell_1/kernel", "shape": [256, 512], "dtype": "float32"}, {"name": "lstm_1/lstm_cell_1/recurrent_kernel", "shape": [128, 512], "dtype": "float32"}, {"name": "lstm_1/lstm_cell_1/bias", "shape": [512], "dtype": "float32"}, {"name": "lstm_2/lstm_cell_2/kernel", "shape": [128, 256], "dtype": "float32"}, {"name": "lstm_2/lstm_cell_2/recurrent_kernel", "shape": [64, 256], "dtype": "float32"}, {"name": "lstm_2/lstm_cell_2/bias", "shape": [256], "dtype": "float32"}]}]}
+# @app.get("/model",tags=["model"])
+# def get_modeljson():
+#     return {"format": "layers-model", "generatedBy": "keras v2.8.0", "convertedBy": "TensorFlow.js Converter v3.13.0", "modelTopology": {"keras_version": "2.8.0", "backend": "tensorflow", "model_config": {"class_name": "Sequential", "config": {"name": "sequential", "layers": [{"class_name": "InputLayer", "config": {"batch_input_shape": [null, 30, 1662], "dtype": "float32", "sparse": False, "ragged": False, "name": "lstm_input"}}, {"class_name": "LSTM", "config": {"name": "lstm", "trainable":True, "batch_input_shape": [null, 30, 1662], "dtype": "float32", "return_sequences":True, "return_state": False, "go_backwards": False, "stateful": False, "unroll": False, "time_major": False, "units": 256, "activation": "relu", "recurrent_activation": "sigmoid", "use_bias": True, "kernel_initializer": {"class_name": "GlorotUniform", "config": {"seed": null}}, "recurrent_initializer": {"class_name": "Orthogonal", "config": {"gain": 1.0, "seed": null}}, "bias_initializer": {"class_name": "Zeros", "config": {}}, "unit_forget_bias": True, "kernel_regularizer": null, "recurrent_regularizer": null, "bias_regularizer": null, "activity_regularizer": null, "kernel_constraint": null, "recurrent_constraint": null, "bias_constraint": null, "dropout": 0.0, "recurrent_dropout": 0.0, "implementation": 2}}, {"class_name": "LSTM", "config": {"name": "lstm_1", "trainable": True, "dtype": "float32", "return_sequences": True, "return_state": False, "go_backwards": False, "stateful": False, "unroll": False, "time_major": False, "units": 128, "activation": "relu", "recurrent_activation": "sigmoid", "use_bias": True, "kernel_initializer": {"class_name": "GlorotUniform", "config": {"seed": null}}, "recurrent_initializer": {"class_name": "Orthogonal", "config": {"gain": 1.0, "seed": null}}, "bias_initializer": {"class_name": "Zeros", "config": {}}, "unit_forget_bias": True, "kernel_regularizer": null, "recurrent_regularizer": null, "bias_regularizer": null, "activity_regularizer": null, "kernel_constraint": null, "recurrent_constraint": null, "bias_constraint": null, "dropout": 0.0, "recurrent_dropout": 0.0, "implementation": 2}}, {"class_name": "LSTM", "config": {"name": "lstm_2", "trainable": True, "dtype": "float32", "return_sequences": False, "return_state": False, "go_backwards": False, "stateful": False, "unroll": False, "time_major": False, "units": 64, "activation": "relu", "recurrent_activation": "sigmoid", "use_bias": True, "kernel_initializer": {"class_name": "GlorotUniform", "config": {"seed": null}}, "recurrent_initializer": {"class_name": "Orthogonal", "config": {"gain": 1.0, "seed": null}}, "bias_initializer": {"class_name": "Zeros", "config": {}}, "unit_forget_bias": True, "kernel_regularizer": null, "recurrent_regularizer": null, "bias_regularizer": null, "activity_regularizer": null, "kernel_constraint": null, "recurrent_constraint": null, "bias_constraint": null, "dropout": 0.0, "recurrent_dropout": 0.0, "implementation": 2}}, {"class_name": "Dense", "config": {"name": "dense", "trainable": True, "dtype": "float32", "units": 64, "activation": "relu", "use_bias": True, "kernel_initializer": {"class_name": "GlorotUniform", "config": {"seed": null}}, "bias_initializer": {"class_name": "Zeros", "config": {}}, "kernel_regularizer": null, "bias_regularizer": null, "activity_regularizer": null, "kernel_constraint": null, "bias_constraint": null}}, {"class_name": "Dense", "config": {"name": "dense_1", "trainable": True, "dtype": "float32", "units": 32, "activation": "relu", "use_bias": True, "kernel_initializer": {"class_name": "GlorotUniform", "config": {"seed": null}}, "bias_initializer": {"class_name": "Zeros", "config": {}}, "kernel_regularizer": null, "bias_regularizer": null, "activity_regularizer": null, "kernel_constraint": null, "bias_constraint": null}}, {"class_name": "Dense", "config": {"name": "dense_2", "trainable": True, "dtype": "float32", "units": 10, "activation": "softmax", "use_bias": True, "kernel_initializer": {"class_name": "GlorotUniform", "config": {"seed": null}}, "bias_initializer": {"class_name": "Zeros", "config": {}}, "kernel_regularizer": null, "bias_regularizer": null, "activity_regularizer": null, "kernel_constraint": null, "bias_constraint": null}}]}}, "training_config": {"loss": "categorical_crossentropy", "metrics": [[{"class_name": "MeanMetricWrapper", "config": {"name": "categorical_accuracy", "dtype": "float32", "fn": "categorical_accuracy"}}]], "weighted_metrics": null, "loss_weights": null, "optimizer_config": {"class_name": "Adam", "config": {"name": "Adam", "learning_rate": 0.001, "decay": 0.0, "beta_1": 0.9, "beta_2": 0.999, "epsilon": 1e-07, "amsgrad": False}}}}, "weightsManifest": [{"paths": ["group1-shard1of3.bin", "group1-shard2of3.bin", "group1-shard3of3.bin"], "weights": [{"name": "dense/kernel", "shape": [64, 64], "dtype": "float32"}, {"name": "dense/bias", "shape": [64], "dtype": "float32"}, {"name": "dense_1/kernel", "shape": [64, 32], "dtype": "float32"}, {"name": "dense_1/bias", "shape": [32], "dtype": "float32"}, {"name": "dense_2/kernel", "shape": [32, 10], "dtype": "float32"}, {"name": "dense_2/bias", "shape": [10], "dtype": "float32"}, {"name": "lstm/lstm_cell/kernel", "shape": [1662, 1024], "dtype": "float32"}, {"name": "lstm/lstm_cell/recurrent_kernel", "shape": [256, 1024], "dtype": "float32"}, {"name": "lstm/lstm_cell/bias", "shape": [1024], "dtype": "float32"}, {"name": "lstm_1/lstm_cell_1/kernel", "shape": [256, 512], "dtype": "float32"}, {"name": "lstm_1/lstm_cell_1/recurrent_kernel", "shape": [128, 512], "dtype": "float32"}, {"name": "lstm_1/lstm_cell_1/bias", "shape": [512], "dtype": "float32"}, {"name": "lstm_2/lstm_cell_2/kernel", "shape": [128, 256], "dtype": "float32"}, {"name": "lstm_2/lstm_cell_2/recurrent_kernel", "shape": [64, 256], "dtype": "float32"}, {"name": "lstm_2/lstm_cell_2/bias", "shape": [256], "dtype": "float32"}]}]}
